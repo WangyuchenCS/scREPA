@@ -1,0 +1,58 @@
+{
+  "default": {
+    "latent_dim": 512,
+    "hidden_dim": 1000,
+    "noise_rate": 0.1,
+    "num_heads": 0,
+    "cycle_weight": 0.01,
+    "KD_weight": 0.2,
+    "epochs": 400,
+    "lr": 5e-4,
+    "batch_size": 256,
+    "weight_decay": 1e-5,
+    "device": "cuda:0",
+    "sub": 1,
+    "seed": 0,
+    "dataname": "PBMC",
+    "adata_path": "../data/PBMC.h5ad",
+    "emdata_path": "../data/PBMC_scGPT.h5ad",
+    "key_dic": {
+      "condition_key": "condition",
+      "cell_type_key": "cell_type",
+      "ctrl_key": "control",
+      "stim_key": "stimulated",
+      "pred_key": "predict"
+    }
+  },
+  "cell_specific": {
+    "NK": {
+      "lr": 1e-4,
+      "epochs": 300
+    },
+    "Dendritic": {
+      "lr": 5e-4,
+      "epochs": 300
+    },
+    "CD4T": {
+      "lr": 5e-4,
+      "epochs": 300,
+      "sub": null
+    },
+    "B": {
+      "lr": 9e-5,
+      "epochs": 400
+    },
+    "FCGR3A+Mono": {
+      "lr": 9e-5,
+      "epochs": 400
+    },
+    "CD14+Mono": {
+      "lr": 5e-4,
+      "epochs": 400
+    },
+    "CD8T": {
+      "lr": 5e-4,
+      "epochs": 400
+    }
+  }
+}
