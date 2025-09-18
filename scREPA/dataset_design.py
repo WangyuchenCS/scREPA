@@ -28,7 +28,9 @@ from torch.utils.data import Dataset
 class AnnDataSet(Dataset):
     def __init__(self, adata):
         self.data = adata.to_df().values
+        self.data = self.data.astype('float32')
         self.embedding = adata.obsm['fm'] if 'fm' in adata.obsm else 0
+        # self.embedding = self.data
         try:
             self.cell_type = adata.obs['cell_type']
         except KeyError:

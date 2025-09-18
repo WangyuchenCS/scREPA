@@ -13,13 +13,11 @@ import json
 from typing import Dict, Any
 
 
-
-
 cell_to_pred = 'CD4T'
 params = load_config(cell_to_pred=cell_to_pred)
 set_seed(params['seed'])
 adata = sc.read(params['adata_path'])
 emdata = sc.read(params['emdata_path'])
-df,pred,ctrla,stima,test_za = run_unseen_celltype(adata, emdata, cell_to_pred, params, params['dataname'])
+df, *_ = run_unseen_celltype(adata, emdata, cell_to_pred, params, params['dataname'])
 
 

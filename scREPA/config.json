@@ -12,6 +12,8 @@
     "weight_decay": 1e-5,
     "device": "cuda:0",
     "sub": 1,
+    "ratio": 0.05,
+    "delta": 1,
     "seed": 0,
     "dataname": "PBMC",
     "adata_path": "../data/PBMC.h5ad",

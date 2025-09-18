@@ -19,8 +19,7 @@ def normalize_embedding(emb):
     std = emb.std(axis=0) + 1e-6
     return (emb - mean) / std
 
-
-def load_config(cell_to_pred=None, config_file="/home/grads/ywang2542/Perturbation/Embedding/scREPA/config.json"):
+def load_config(cell_to_pred=None, config_file="/home/grads/ywang2542/Perturbation/Embedding/scREPA/scREPA/config.json"):
     """
     Load configuration from JSON file 
     Args:

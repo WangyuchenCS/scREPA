@@ -7,6 +7,7 @@ from adjustText import adjust_text
 from scipy.stats import wasserstein_distance
 from matplotlib.backends.backend_pdf import PdfPages
 import sklearn
+from scipy.stats import pearsonr, norm
 import ot
 import random
 import torch
@@ -191,6 +192,29 @@ def get_pearson2(eval_adata, key_dic, n_degs=100, sample_ratio=0.8, times=100, r
     return r2_mean, r2_std
 
 
+def r2_with_ci_and_p(x, y, alpha=0.05):
+    x = np.asarray(x); y = np.asarray(y)
+    m = np.isfinite(x) & np.isfinite(y)
+    x = x[m]; y = y[m]
+    n = len(x)
+    r, p = pearsonr(x, y)  # Pearson r 和 p 值
+    r2 = r**2
+
+    # Fisher z 变换求 r 的 CI，再平方得到 R^2 的 CI
+    if n > 3:
+        z = np.arctanh(np.clip(r, -0.999999, 0.999999))
+        se = 1 / np.sqrt(n - 3)
+        zcrit = norm.ppf(1 - alpha/2)
+        r_lo = np.tanh(z - zcrit * se)
+        r_hi = np.tanh(z + zcrit * se)
+        r2_lo, r2_hi = r_lo**2, r_hi**2
+    else:
+        r2_lo = r2_hi = np.nan
+
+    return r2, p, r2_lo, r2_hi, n
+
+
+
 def draw_reg_plot(eval_adata,
                   cell_type,
                   reg_type='mean',
@@ -257,14 +281,18 @@ def draw_reg_plot(eval_adata,
         )
     if top_gene_list is not None:
         data_deg = data_df.loc[top_gene_list, :]
-        r_top = round(data_deg['case'].corr(data_deg['predict'], method='pearson'), 3)
+        # r_top = round(data_deg['case'].corr(data_deg['predict'], method='pearson'), 3)
+        r_top, p_t, lo_t, hi_t, n_t = r2_with_ci_and_p(data_deg['case'], data_deg['predict'])
+        print(f"{cell_type} {reg_type} of top {len(top_gene_list)} genes: R2={r_top:.3f}, p={p_t:.3e}, 95% CI=({lo_t:.3f}, {hi_t:.3f}), n={n_t}")
         xt = 0.1 * np.max(data_df['case'])
         yt = 0.85 * np.max(data_df['predict'])
-        ax.text(xt, yt, s='$R^2_{top 100 genes}$=' + str(round(r_top * r_top, 3)), fontsize=fontsize, color='black')
-    r = round(data_df['case'].corr(data_df['predict'], method='pearson'), 3)
+        ax.text(xt, yt, s='$R^2_{top 100 genes}$=' + str(round(r_top, 3)), fontsize=fontsize, color='black')
+    # r = round(data_df['case'].corr(data_df['predict'], method='pearson'), 3)
+    r2_a, p_a, lo_a, hi_a, n_a = r2_with_ci_and_p(data_df['case'], data_df['predict'])
+    print(f"{cell_type} {reg_type} of all genes: R2={r2_a:.3f}, p={p_a:.3e}, 95% CI=({lo_a:.3f}, {hi_a:.3f}), n={n_a}")
     xt = 0.1 * np.max(data_df['case'])
     yt = 0.75 * np.max(data_df['predict'])
-    ax.text(xt, yt, s='$R^2_{all genes}$=' + str(round(r * r, 3)), fontsize=fontsize, color='black')
+    ax.text(xt, yt, s='$R^2_{all genes}$=' + str(round(r2_a, 3)), fontsize=fontsize, color='black')
 
     ax.set_xlabel(f"True {reg_type} Expression")      # x
     ax.set_ylabel(f"Predicted {reg_type} Expression") # y
@@ -282,9 +310,9 @@ def draw_reg_plot(eval_adata,
         plt.show()
     plt.close()
     if return_fig:
-        return [round(r * r, 3), round(r_top * r_top, 3), fig]
+        return [round(r2_a, 3), round(r_top, 3), fig]
     else:
-        return [round(r * r, 3), round(r_top * r_top, 3)]
+        return [round(r2_a, 3), round(r_top, 3)]
 
 
 def get_wasserstein_distance(eval_adata, case_key='stimulated', pred_key='predict', 
@@ -397,6 +425,16 @@ def evaluate(data_name, eval_adata, key_dic, save_path=None, return_fig=False, e
         common_degs = list(set(degs_ctrl[0:100]) & set(degs_pred[0:100]))
         common_nums = len(common_degs)
         degs_list.append(common_nums)
+
+        # save the DEGs
+        with open(f"/home/grads/ywang2542/Perturbation/scPRAM/scOTC/src_MMD/DEGs_{cell_type}.txt", "w") as f:
+            f.write("Control DEGs:\n")
+            f.writelines([f"{gene}\n" for gene in degs_ctrl[0:100]])
+            f.write("Predicted DEGs:\n")
+            f.writelines([f"{gene}\n" for gene in degs_pred[0:100]])
+            f.write("Common DEGs:\n")
+            f.writelines([f"{gene}\n" for gene in common_degs])
+
         print(cell_type, " common DEGs:", common_nums)
         r2mean = draw_reg_plot(eval_adata=eval_adata,
                                cell_type=cell_type,

@@ -24,10 +24,10 @@ from dataset_design import AnnDataSet
 warnings.filterwarnings('ignore')
 
 
-class scDistillOTC(nn.Module):
+class scREPA(nn.Module):
     def __init__(self, input_dim=6998, latent_dim=200, hidden_dim=1000, 
                  noise_rate=0.1, kl_weight=5e-3, cycle_weight=0.01, KD_weight=0.01, num_heads=4, device=None):
-        super(scDistillOTC, self).__init__()
+        super(scREPA, self).__init__()
         if num_heads >= 1:
             self.attn = nn.MultiheadAttention(embed_dim=latent_dim, num_heads=num_heads, batch_first=True)
         self.device = device
@@ -62,7 +62,7 @@ class scDistillOTC(nn.Module):
 
 
     def encode(self, x):
-        h = self.encoder(x)
+        h = self.encoder(x)  # torch.Size([256, 21265])
         mu, logvar = torch.chunk(h, 2, dim=1)
         z = self.reparameterize(mu, logvar)
         if self.num_heads >= 1:
@@ -138,7 +138,7 @@ class scDistillOTC(nn.Module):
         return latent_adata
 
 
-    def train_scDistillOTC(self, train_adata, epochs=100, batch_size=128, lr=5e-4, weight_decay=1e-5, wandb_run=None):
+    def train_scREPA(self, train_adata, epochs=100, batch_size=128, lr=5e-4, weight_decay=1e-5, wandb_run=None):
         device = self.device
         anndataset = AnnDataSet(train_adata)
         train_loader = DataLoader(anndataset, batch_size=batch_size, shuffle=True, drop_last=False)  # batch_size = 128
@@ -170,12 +170,12 @@ class scDistillOTC(nn.Module):
                 loss_cycle_ += [loss_cycle.mean().item()]
                 # print(f'loss: {scOTC_loss.item()}')
             if wandb_run:
-                wandb_run.log({"scDistillOTC_loss": np.mean(loss_),
+                wandb_run.log({"scREPA_loss": np.mean(loss_),
                                "recon_loss": np.mean(loss_rec_),
                                "kl_loss": np.mean(loss_kl_),
                                "cycle_loss": np.mean(loss_cycle_),
                                "distill_loss": distill_loss.item()})
-            pbar.set_postfix(scDistillOTC_loss=np.mean(loss_), 
+            pbar.set_postfix(scREPA_loss=np.mean(loss_), 
                              recon_loss=np.mean(loss_rec_),
                              kl_loss=np.mean(loss_kl_),
                              cycle_loss=np.mean(loss_cycle_),
@@ -217,7 +217,7 @@ class scDistillOTC(nn.Module):
         sc.tl.umap(adata_combined)
         sc.pl.umap(
                 adata_combined,
-                color=["cell_type", "condition"],
+                color=[key_dic['cell_type_key'], key_dic['condition_key']],
                 save="_combined_latent_umap.pdf", 
                 frameon=False,
                 title=["Latent Space (cell type)", "Latent Space (condition)"], 
