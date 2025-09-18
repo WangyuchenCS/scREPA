@@ -6,7 +6,7 @@ Official implementation of the paper:
 **“scREPA: Predicting Single-Cell Perturbation Responses with Cycle-Consistent Representation Alignment”**
 
 > This repository contains code and pretrained resources for our paper:
-> **"\[scOTM: A Deep Learning Framework for Predicting Single-Cell Perturbation Responses with Large Language Models]"**
+> **"\[scREPA: A Deep Learning Framework for Predicting Single-Cell Perturbation Responses with Large Language Models]"**
 > \[Yuchen Wang et al.]
 ---
 
@@ -47,8 +47,8 @@ This project is built with Conda and Python 3.8+. We recommend using the provide
 ### ✅ Install via Conda
 
 ```bash
-conda env create -f scOTM.yml
-conda activate scOTM
+conda env create -f scREPA.yml
+conda activate scREPA
 ```
 
 ---
