@@ -10,7 +10,7 @@ Official implementation of the paper:
 > \[Yuchen Wang et al.]
 ---
 
-## 🚀 Overview
+## 🚀 Abstract
 
 Modeling cellular perturbation responses is essential for understanding disease mechanisms and developing therapeutic strategies. Recent advances in single-cell foundation models (scFMs) offer a promising solution by providing biologically meaningful representations. Inspired by the success of REPresentation Alignment (REPA) in generative diffusion models, we propose scREPA, a novel framework for single-cell perturbation prediction that aligns the internal representations of a variational autoencoder (VAE)-based model with high-quality external representations from pretrained scFMs. Specifically, scREPA aligns VAE latent embeddings from noisy gene expression profiles with biologically meaningful embeddings from scFMs. We also propose Cycle-Consistent Representation Alignment by aligning the re-encoded embeddings of VAE-generated gene expression profiles with both original scFM representations and initial VAE embeddings, enforcing dual consistency and further improving representation quality. During inference, scREPA applies optimal transport to align the distributions of unpaired control and perturbed data, enabling robust prediction of cellular responses by minimizing mismatch.
 
